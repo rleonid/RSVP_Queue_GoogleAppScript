@@ -1,0 +1,38 @@
+<div>
+  <script>
+    function updateUrl(url) {
+      var div = document.getElementById('output');
+      div.innerHTML = '<a href="' + url + '">Got it!</a>';
+    }
+  </script>
+  Hello <?= Session.getActiveUser() ?> lets setup a Queued RSVP list:
+  <form>
+    <div title="What do you want to call this event?">
+      <label for="eventName">Event Name:</label>
+      <input id="eventName" name=eventName type="text">
+    </div>
+    <div title="Who do you want to invite.">
+      <label for="guests">Guests:</label>
+      <textarea id="guests" name=guests cols=60 rows=10></textarea>
+    </div>
+    <div>
+      <label for="numYeses">Number of Yes's:</label>
+      <input id="numYes" name=numYes type="number" min=1 max=100 value=5 >
+    </div>
+    <div>
+      <label for="timeToRespond">Number of hours to respond:</label>
+      <input id="timeToRespond" name=timeToRespond type="number" min=1 max=72 value=6 >
+    </div>
+    <div title="The message that you want to send to your guests." >
+      <label for="message">Message:</label>
+      <textarea id="message" name=message cols=60 rows=10></textarea>
+    </div>
+    Once you submit, emails will automatically be sent to the first people on your list and you'll be redirected to a 
+    Google spreadsheet where you can keep track of peoples responses.
+    <input type="button" value="Submit"
+        onclick="google.script.run
+                .withSuccessHandler(updateUrl)
+                .processForm(this.parentNode)" />
+  </form>
+  <div id="output"></div>
+</div>
