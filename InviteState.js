@@ -54,7 +54,7 @@ function Meta(url, eventName, message, timeOutHours, numYes){
  *
  * @param {Meta} meta
  */
-function saveMeta(m);
+function saveMeta(m){
   var db = ScriptDb.getMyDb();
   db.save(m);
   return db;
