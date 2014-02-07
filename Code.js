@@ -33,21 +33,33 @@ function doGet(request) {
  */
 function processForm(formObject) {
   Logger.log(["formObject:", formObject]);
-  return go(formObject);
-}
-
-/**
- * go
- */
-function go(formObject){
-  var url = createConfigSheet(formObject);    
+  var url = createConfigSheet(formObject); 
   var allEmails = formObject.guests.split(',');
   var lb = Math.min(formObject.numYeses, 20);  // max number of triggers
   var firstEmails = allEmails.slice(0,lb);
   var restEmails = allEmails.slice(lb);
   setup(url, firstEmails, restEmails
-          , formObject.eventName
-          , formObject.message
-          , formObject.timeToRespond
-          , formObject.numYeses);
+           , formObject.eventName
+           , formObject.message
+           , formObject.timeToRespond
+           , formObject.numYeses);
+}
+
+/**
+ * What happens when an anonymous user makes a request to the app.
+ * Either it is someone we don't trust, in which case ignore
+ * Or it is a response from one of our emails in which case we need to
+ * record the response.
+ */
+function handleAnonymous(request){
+  if(request.parameter === undefined){ 
+    if(request.parameter.who === undefined ||
+       request.parameter.state === undefined){
+      return HtmlService.createHtmlOutput("<b>Missing parameters.</b>");
+    } else {
+      updateResponse(request.parameter.who,requet.parameter.state);
+    }
+  } else {
+    return HtmlService.createHtmlOutput("<b>You must be mistaken.</b>");
+  }
 }
