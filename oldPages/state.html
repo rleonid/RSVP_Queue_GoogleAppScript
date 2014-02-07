@@ -1,0 +1,22 @@
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function() {
+    //var u = "https://script.google.com/macros/s/AKfycbzCmhQ_gHZ_rfY1qCxq9UVpaaUctvNCgIjJghdUYhZ5NwCX3Z4/exec";
+    var u = "https://script.google.com/macros/s/AKfycbxZavgQDLrXJsGrgqwBXwfF2RIMzGY0fw5pToljfVQkMxJdjvxv/exec";
+    $.get(u, function(data) { 
+      $('#echo').text(data);
+      //alert(s); 
+      });
+   });
+</script>
+</head>
+<body>
+    <div id=echo>what?</div></p>
+    <a target="_blank" href="https://script.google.com/macros/s/AKfycbxZavgQDLrXJsGrgqwBXwfF2RIMzGY0fw5pToljfVQkMxJdjvxv/exec?email=whatever&state=occupied">
+      Occupied</a>
+    <a target="_blank" href="https://script.google.com/macros/s/AKfycbxZavgQDLrXJsGrgqwBXwfF2RIMzGY0fw5pToljfVQkMxJdjvxv/exec?email=whatever&state=free">
+      Free</a>
+</body>
+</html>

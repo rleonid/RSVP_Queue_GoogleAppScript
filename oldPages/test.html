@@ -1,0 +1,51 @@
+<html>
+<head>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript">
+(function () {
+       google.load("jquery", "1");
+       google.setOnLoadCallback(function() {
+            //var u = "https://script.google.com/a/macros/mcpher.com/s/AKfycbwlo9ZT8M8C368opw9AAL3XvJIzzmtGqeV7N_TUL_0i5U2WDV8/exec";
+            var u = "https://script.google.com/macros/s/AKfycbzCmhQ_gHZ_rfY1qCxq9UVpaaUctvNCgIjJghdUYhZ5NwCX3Z4/exec";
+            // these all work if webapp is set to 'anyone, readonly'
+            ajaxStuff ("GET",u);
+            ajaxStuff ("GET",u,null,true);
+            ajaxStuff ("POST",u,{data:'somestuff'});
+            ajaxStuff ("POST",u,{data:'somestuff'},true);
+            ajaxStuff ("GET",u,null,false,{'x-header':'something'});
+        });
+        
+        function ajaxStuff(method,url,postData,p,headers) {
+            var p = (p ? true: false);
+            url += "?method="+method + "&p=" +p ;
+            dataType = p ? "jsonp" : "json";
+            var elem = $('#'+method+p+ (headers ? 'header' :''));
+            if (p) url += "&callback=?";
+            $.ajax({
+              type: method,
+              url: url,
+              data: postData,
+              dataType: dataType,
+              headers:headers
+            })
+            .done (function (data) {
+                elem.text(JSON.stringify(data));
+            })
+            .fail (function ( jqXHR) {
+                elem.text(jqXHR.statusText);
+            });
+        }
+    })();
+    
+</script>
+
+
+</head>
+<body>
+    <div>get</div><div id=GETfalse></div></p>
+    <div>get jsonp</div><div id=GETtrue></div></p>
+    <div>post</div><div id=POSTfalse></div></p>
+    <div>post jsonp</div><div id=POSTtrue></div></p>
+    <div>get with header</div><div id=GETfalseheader></div></p>
+</body>
+</html>
