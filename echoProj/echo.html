@@ -1,0 +1,22 @@
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function() {
+    //var u = "https://script.google.com/macros/s/AKfycbzCmhQ_gHZ_rfY1qCxq9UVpaaUctvNCgIjJghdUYhZ5NwCX3Z4/exec";
+    var u = "https://script.google.com/macros/s/AKfycbzfXbY4JlWso0sIaYy__NfUF6EyVyoO0l_Zz_ktXcSo3VFeBzs/exec";
+    $.get(u, function(data) { 
+      $('#echo').text(data);
+      //alert(s); 
+      });
+   });
+</script>
+</head>
+<body>
+    <div id=echo>what?</div></p>
+    <a href="https://script.google.com/macros/s/AKfycbzfXbY4JlWso0sIaYy__NfUF6EyVyoO0l_Zz_ktXcSo3VFeBzs/exec?echo=Yes">
+      Say Yes</a>
+    <a href="https://script.google.com/macros/s/AKfycbzfXbY4JlWso0sIaYy__NfUF6EyVyoO0l_Zz_ktXcSo3VFeBzs/exec?echo=No">
+      Oh No!</a>
+</body>
+</html>
