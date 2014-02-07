@@ -57,7 +57,7 @@ function saveMeta(url, eventName, message, timeOutHours, numYes){
   db.save({ spreadsheetUrl:url
           , eventName:eventName
           , message:message
-          , timeOutHours:timeOutHours,
+          , timeOutHours:timeOutHours
           , numYes:numYes});
   return db;
 }
@@ -126,31 +126,31 @@ function checkTimedOut(){
     // finally set another timeout
     ScriptApp.newTrigger('checkTimedOut')
     .timeBased()
-    .after(hourToMilliSeconds(meta.timeOutHours)
+    .after(hourToMilliSeconds(meta.timeOutHours))
     .create();
   }
 
 };
 
 function setup(url,firstEmails,restEmails,eventName,message,timeOutHours,numYes){
-  var db = saveMeta(url, eventName, message, timeOutHours, numYes){
+  var db = saveMeta(url, eventName, message, timeOutHours, numYes);
   var now = new Date();
   var ts = now.getTime();
-  for(int i = 0; i < firstEmails.length; i++){
+  for(var i = 0; i < firstEmails.length; i++){
     var mailMe = firstEmail[i];
     MailApp.sendEmail(mailMe, eventName, message); // send email
     db.save({email:mailMe, state: invitedState, position:-1, timeStamp:ts});
   }
 
   // store the rest of the emails for processing
-  for(int i = 0; i < restEmails.lengthl i++){
+  for(var i = 0; i < restEmails.length; i++){
     db.save({email:restEmails[i], state: pendingState, position:i, timeStamp:-1});
   }
 
   // set a timeout 
   ScriptApp.newTrigger('checkTimedOut')
     .timeBased()
-    .after(hourToMilliSeconds(timeOutHours)
+    .after(hourToMilliSeconds(timeOutHours))
     .create();
 
 }
