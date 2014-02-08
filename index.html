@@ -9,30 +9,46 @@
   <form>
     <div title="What do you want to call this event?">
       <label for="eventName">Event Name:</label>
-      <input id="eventName" name=eventName type="text">
+      <? if(meta == null) { ?>
+        <input id="eventName" name=eventName type="text">
+      <? } else { ?>
+        <input id="eventName" name=eventName type="text" value= <?= meta.eventName ?> >
+      <? } ?>
     </div>
     <div title="Who do you want to invite.">
       <label for="guests">Guests:</label>
-      <textarea id="guests" name=guests cols=60 rows=10></textarea>
+      <textarea id="guests" name=guests cols=60 rows=10><?= (meta == null) ? '' : meta.guests  ?></textarea>
     </div>
     <div>
-      <label for="numYeses">Number of Yes's:</label>
-      <input id="numYes" name=numYes type="number" min=1 max=100 value=5 >
+      <label for="numYes">Number of Yes's:</label>
+      <? if(meta == null) { ?>
+        <input id="numYes" name=numYes type="number" min=1 max=100 value=5 >
+      <? } else { ?>
+        <input id="numYes" name=numYes type="number" min=1 max=100 value=<?=meta.numYes ?> >
+      <? } ?>
     </div>
     <div>
       <label for="timeToRespond">Number of hours to respond:</label>
-      <input id="timeToRespond" name=timeToRespond type="number" min=1 max=72 value=6 >
+      <? if(meta == null) { ?>
+        <input id="timeToRespond" name=timeToRespond type="number" min=1 max=72 value=6 >
+      <? } else { ?>
+        <input id="timeToRespond" name=timeToRespond type="number" min=1 max=72 value=<?=meta.timeOutHours?> >
+      <? } ?>
     </div>
     <div title="The message that you want to send to your guests." >
       <label for="message">Message:</label>
-      <textarea id="message" name=message cols=60 rows=10></textarea>
+      <textarea id="message" name=message cols=60 rows=10><?= (meta == null) ? '' : meta.message ?></textarea>
     </div>
     Once you submit, emails will automatically be sent to the first people on your list and you'll be redirected to a 
     Google spreadsheet where you can keep track of peoples responses.
-    <input type="button" value="Submit"
-        onclick="google.script.run
-                .withSuccessHandler(updateUrl)
-                .processForm(this.parentNode)" />
+    <? if (meta == null) { ?>
+      <input type="button" value="Submit"
+          onclick="google.script.run
+                  .withSuccessHandler(updateUrl)
+                  .processForm(this.parentNode)" />
+    <? } else { ?>
+      <input type="button" value="Cancel" onclick="google.script.run.clearRSVP" />
+    <? } ?>
   </form>
   <div id="output"></div>
 </div>

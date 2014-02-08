@@ -12,15 +12,11 @@ function doGet(request) {
   var em = Session.getActiveUser().getEmail();
   if (em == Session.getEffectiveUser().getEmail()) {
     var meta = loadMeta();
-    if(meta == null) {    // not running
-      return HtmlService.createTemplateFromFile('index').evaluate();
-    } else { 
-      return HtmlService.createHtmlOutput(
-        "<form action='" + meta.spreadsheetUrl + "' method='get' id='foo'></form>" + 
-        "<script>document.getElementById('foo').submit();</script>"); 
-    }
+    var template = HtmlService.createTemplateFromFile('index');
+    template.meta = meta;
+    return template.evaluate();
   } else {
-    handleAnonymous(request);
+    return handleAnonymous(request);
   }
 }
 
@@ -34,15 +30,13 @@ function doGet(request) {
 function processForm(formObject) {
   Logger.log(["formObject:", formObject]);
   var url = createConfigSheet(formObject); 
-  var allEmails = formObject.guests.split(',');
-  var lb = Math.min(formObject.numYeses, 20);  // max number of triggers
-  var firstEmails = allEmails.slice(0,lb);
-  var restEmails = allEmails.slice(lb);
-  setup(url, firstEmails, restEmails
-           , formObject.eventName
-           , formObject.message
-           , formObject.timeToRespond
-           , formObject.numYeses);
+  var m  = new Meta(url, formObject.guests
+                       , formObject.eventName
+                       , formObject.message
+                       , formObject.timeToRespond
+                       , formObject.numYes);
+
+  setup(m);
 }
 
 /**
@@ -58,8 +52,14 @@ function handleAnonymous(request){
       return HtmlService.createHtmlOutput("<b>Missing parameters.</b>");
     } else {
       updateResponse(request.parameter.who,requet.parameter.state);
+      return HtmlService.createHtmlOutput("<b>Thanks!</b>");
     }
   } else {
     return HtmlService.createHtmlOutput("<b>You must be mistaken.</b>");
   }
+}
+
+function clearRSVP(){
+  clearTriggers();
+  clearDb();
 }

@@ -36,13 +36,15 @@ function clearState(email){
  * to run the invite logic.
  *
  * @param {String} spreadsheetUrl
+ * @param {String} guests
  * @param {String} eventName 
  * @param {String} message
  * @param {number} timeOutHours 
- * @param {number} numyes 
+ * @param {number} numYes 
  */
-function Meta(url, eventName, message, timeOutHours, numYes){
+function Meta(url, guests, eventName, message, timeOutHours, numYes){
   this.spreadsheetUrl = url;
+  this.guests = guests;
   this.eventName = eventName;
   this.message = message;
   this.timeOutHours = timeOutHours;
@@ -56,7 +58,7 @@ function Meta(url, eventName, message, timeOutHours, numYes){
  */
 function saveMeta(m){
   var db = ScriptDb.getMyDb();
-  db.save(m);
+  db.save({ type:'meta', data:m });
   return db;
 }
 
@@ -67,13 +69,9 @@ function saveMeta(m){
  */
 function loadMeta(){
   var db = ScriptDb.getMyDb();
-  var res = db.query({ spreadsheetUrl: db.anyValue()
-                     , eventName: db.anyValue()
-                     , message: db.anyValue()
-                     , timeOutHours: db.anyValue()
-                     , numYes: db.anyValue() });
+  var res = db.query({ type: 'meta', data: db.anyValue()});
   if (res.hasNext()){
-    return res.next();
+    return res.next().data;
   } else {
     return null;
   }
@@ -102,7 +100,7 @@ function loadGlobalState() {
   var db = ScriptDb.getMyDb();
   var res = db.query({state: acceptedState});
   var accepted = res.getSize();
-  return GlobalState(meta, db, accepted);
+  return new GlobalState(meta, db, accepted);
 }
 
 
@@ -149,6 +147,10 @@ function sendMail(email, eventName, message){
   MailApp.sendEmail(email,eventName,"",{htmlBody:htmlBody});
 }
 
+function updateStateInStatusRange(range,position,state){
+  range.getCell(position+1,1).setValue(state);
+}
+
 /**
  * Send new invitations based upon the global state
  *
@@ -168,11 +170,15 @@ function sendNewInvites(gs){
     res = gs.db.query({ state: pendingState})
                .sortBy('position', gs.db.ASCENDING, gs.db.NUMERIC)
                .limit(numberOfInvitesToSendOut);
+    var now = new Date();
+    var nts = now.getTime();
+    var ran = fetchStateRange(gs.meta.spreadsheetUrl);
     while(res.hasNext()){
       var item = res.next();
       sendMail(item.email, gs.meta.eventName, gs.meta.message);
       item.state = invitedState;
       item.timeStamp = nts;
+      updateStateInStatusRange(ran,item.position,invitedState);
       gs.db.save(item);
     }
 
@@ -189,16 +195,11 @@ function checkTimedOut(){
 
   var gs = loadGlobalState();
   if(gs.accepted >= gs.meta.numYes) {
-    // great we're done, so delete all of the remaining triggers
-    var triggers = ScriptApp.getProjectTriggers();
-    for(var i in triggers){
-      ScriptApp.deleteTrigger(triggers[i]);
-    }
-  
-    return;
+    clearTriggers(); // great we're done, so delete all of the remaining triggers
   } else {
 
     // update the invited that have expired to expired
+    var ran = fetchStateRange(gs.meta.spreadsheetUrl);
     var now = new Date();
     var nts = now.getTime();
     var expiredTimeStamp = nts - hourToMilliSeconds(gs.meta.timeOutHours);
@@ -207,6 +208,7 @@ function checkTimedOut(){
     while(res.hasNext()){
       var item = res.next();
       item.state = expiredState;
+      updateStateInStatusRange(ran,item.position,expiredState);
       gs.db.save(item);
     }
 
@@ -224,10 +226,12 @@ function checkTimedOut(){
  */
 function updateResponse(email,state){
   var gs = loadGlobalState();
+  var ran = fetchStateRange(gs.meta.spreadsheetUrl);
   var res = gs.db.query({email: email});
   while(res.hasNext()){
     var item = res.next();
     item.state = state;
+    updateStateInStatusRange(ran,item.position,state);
     gs.db.save(item);
   }
   if (state == declinedState){
@@ -237,21 +241,42 @@ function updateResponse(email,state){
 
 /**
  * Setup the state mechanism
+ *
+ * @param {Meta} meta
  */
-function setup(url,emails,eventName,message,timeOutHours,numYes){
+function setup(meta){
 
-  var m  = Meta(url, eventName, message, timeOutHours, numYes);
-  var db = saveMeta(m);
+  var db = saveMeta(meta);
+  var emails = meta.guests.split(',');
+
   // store all of the emails as pending
   for(var i = 0; i < emails.length; i++){
     db.save({email:emails[i], state: pendingState, position:i, timeStamp:-1});
   }
 
   // send out the invites since no one is currently invited (or accepted).
-  sendNewInvites(GlobalState(m,db,0));
+  sendNewInvites(new GlobalState(meta,db,0));
 
   // set a timeout
-  setupTimeOutTrigger(timeOutHours)
+  setupTimeOutTrigger(meta.timeOutHours);
 }
 
+function clearTriggers(){
+  var triggers = ScriptApp.getProjectTriggers();
+  for(var i in triggers){
+    ScriptApp.deleteTrigger(triggers[i]);
+  }
+}
 
+function clearDb(){
+  var db = ScriptDb.getMyDb();
+  while (true) {
+    var result = db.query({}); // Get everything, up to limit.
+    if (result.getSize() == 0) {
+      break;
+    }
+    while (result.hasNext()) {
+      db.remove(result.next());
+    }
+  }
+}

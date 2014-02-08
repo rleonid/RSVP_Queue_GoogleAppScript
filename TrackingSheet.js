@@ -34,7 +34,7 @@ function setupConfigSheet(sheet,formObject){
 
   var statusRange = sheet.getRange(2,2,guests.length,1);
   statusRange.setBackground('#CCCC00');
-  statusRange.setFormula("R[0]C[-1]");
+  statusRange.setValue(pendingState);
   sheet.setColumnWidth(2,80);
 
   var parameterRange = sheet.getRange(1,4,3,1);
@@ -49,7 +49,7 @@ function setupConfigSheet(sheet,formObject){
   //sheet.setColumnWidth(4, 135);  
   
   var parameterRange2 = sheet.getRange(1,5,3,1);
-  parameterRange2.setNotes([['Enter the message (invitation) to send to your guests here.'],
+  parameterRange2.setNotes([['The message (invitation) sent to your guests here.'],
                             ['How many guests do you want to invite?'],
                             ["How much time do you want to give guests to respond to your email? After this time we will invite the next person in the queue."]]);
   
@@ -71,3 +71,10 @@ function createConfigSheet(formObject){
   setupConfigSheet(confSheet,formObject);
   return spreadS.getUrl();
 };
+
+function fetchStateRange(spreadUrl){
+  var ss = SpreadsheetApp.openByUrl(spreadUrl);
+  var sh = ss.getSheetByName("RSVPed");
+  var lr = sh.getLastRow();
+  return sh.getRange(2,2,lr-1,1);
+}
