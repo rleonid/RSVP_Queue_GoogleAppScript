@@ -46,16 +46,18 @@ function processForm(formObject) {
  * record the response.
  */
 function handleAnonymous(request){
+  Logger.log(["anonymous request:", request]);
   if(request.parameter === undefined){ 
-    if(request.parameter.who === undefined ||
+    return HtmlService.createHtmlOutput("<b>You must be mistaken.</b>");
+  } else {
+    if(request.parameter.email === undefined ||
        request.parameter.state === undefined){
       return HtmlService.createHtmlOutput("<b>Missing parameters.</b>");
     } else {
-      updateResponse(request.parameter.who,requet.parameter.state);
+      updateResponse(request.parameter.who,request.parameter.state);
       return HtmlService.createHtmlOutput("<b>Thanks!</b>");
     }
-  } else {
-    return HtmlService.createHtmlOutput("<b>You must be mistaken.</b>");
+
   }
 }
 
