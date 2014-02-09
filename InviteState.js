@@ -137,10 +137,10 @@ function setupTimeOutTrigger(timeOutHours){
 
 function sendMail(email, eventName, message){
   var url = ScriptApp.getService().getUrl();
-  var target1 = '<a target=\"_blank\" href=\"' + url + '?email=' + 
-                  email + '&state=' + acceptedState + '\" > Accept </a>';
-  var target2 = '<a target=\"_blank\" href=\"' + url + '?email=' + 
-                  email + '&state=' + declinedState + '\" > Decline </a>';
+  var target1 = '<a target="_blank" href="' + url + '?email=' + 
+                  email + '&state=' + acceptedState + '" > Accept </a>';
+  var target2 = '<a target="_blank" href="' + url + '?email=' + 
+                  email + '&state=' + declinedState + '" > Decline </a>';
   var htmlBody = '<div>' + message + '</div><div>' + 
                   target1 + ' | ' + target2 + '</div>';
 
