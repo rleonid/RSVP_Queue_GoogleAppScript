@@ -64,7 +64,7 @@ function setupConfigSheet(sheet,formObject){
  * Setup the config sheet.
  */
 function createConfigSheet(formObject){
-  var spreadS   = SpreadsheetApp.create("RSVP Responses" + formObject.eventName);
+  var spreadS   = SpreadsheetApp.create("RSVP Responses for " + formObject.eventName);
   var sheetName = "RSVPed";
   spreadS.renameActiveSheet(sheetName);
   var confSheet = spreadS.getSheetByName(sheetName);
