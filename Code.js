@@ -55,7 +55,7 @@ function handleAnonymous(request){
        request.parameter.state === undefined){
       return HtmlService.createHtmlOutput("<b>Missing parameters.</b>");
     } else {
-      var msg = updateResponse(request.parameter.code,request.parameter.state);
+      var msg = updateResponseLocked(request.parameter.code,request.parameter.state);
       return HtmlService.createHtmlOutput("<b>" + msg + "</b>");
     }
   }

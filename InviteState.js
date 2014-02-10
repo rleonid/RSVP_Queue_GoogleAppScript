@@ -124,12 +124,12 @@ var acceptedState = 'Accepted';       // accept
 var expiredState  = 'Expired';        // or have their invitation expire
 
 /**
- * Setup a timed trigger to run checkTimedOut in the given number of hours.
+ * Setup a timed trigger to run checkTimedOutLocked in the given number of hours.
  *
  * @param {number} timeOutHours
  */
 function setupTimeOutTrigger(timeOutHours){
-  ScriptApp.newTrigger('checkTimedOut')
+  ScriptApp.newTrigger('checkTimedOutLocked')
            .timeBased()
            .after(hourToMilliSeconds(timeOutHours))
            .create();
@@ -217,6 +217,17 @@ function checkTimedOut(){
 
 }
 
+function checkTimedOutLocked(){
+  var lock = LockService.getPublicLock();
+  lock.waitLock(10000);
+  if(!lock.hasLock()){
+    Logger.log("Failed to acquire lock after 10 seconds, check timed out.");
+    return;
+  }
+  checkTimedOut();
+  lock.releaseLock();
+}
+
 /**
  * Update a response for an email to the given state and
  * send new invites if necessary.
@@ -249,6 +260,19 @@ function updateResponse(code,state){
   }
 }
 
+function updateResponseLocked(code, state){
+
+  var lock = LockService.getPublicLock();
+  lock.waitLock(10000);
+  if(!lock.hasLock()){
+    Logger.log("Failed to acquire lock after 10 seconds, update response.");
+    return;
+  }
+  var r = updateResponse(code, state);
+  lock.releaseLock();
+  return r;
+}
+
 /**
  * Not fully secure.
  */
@@ -278,9 +302,11 @@ function setup(meta){
   // store all of the emails as pending
   var emails = meta.guests.split(',');
   for(var i = 0; i < emails.length; i++){
-    var email   = emails[i].trim();
-    var emCode  = encodeEmail(keyBytes, email);
-    db.save({email:email, code: emCode, state: pendingState, position:i, timeStamp:-1});
+    var email = emails[i].trim();
+    if (email != ''){
+      var emCode = encodeEmail(keyBytes, email);
+      db.save({email:email, code: emCode, state: pendingState, position:i, timeStamp:-1});
+    }
   }
 
   // send out the invites since no one is currently invited (or accepted).
