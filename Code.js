@@ -37,6 +37,7 @@ function processForm(formObject) {
                        , formObject.numYes);
 
   setup(m);
+  return url;
 }
 
 /**
@@ -54,18 +55,21 @@ function handleAnonymous(request){
        request.parameter.state === undefined){
       return HtmlService.createHtmlOutput("<b>Missing parameters.</b>");
     } else {
-      updateResponse(request.parameter.code,request.parameter.state);
-      if(state == declinedState) {
-        return HtmlService.createHtmlOutput("<b>Sorry that you can't make it.</b>");
-      } else {
-        return HtmlService.createHtmlOutput("<b>Glad that you can come!</b>");
-      }
+      var msg = updateResponse(request.parameter.code,request.parameter.state);
+      return HtmlService.createHtmlOutput("<b>" + msg + "</b>");
     }
-
   }
 }
 
 function clearRSVP(){
   clearTriggers();
   clearDb();
+}
+
+function logDb(){
+  var db = ScriptDb.getMyDb();
+  var result = db.query({}); // Get everything, up to limit.
+  while (result.hasNext()) {
+    Logger.log(result.next());
+  }
 }

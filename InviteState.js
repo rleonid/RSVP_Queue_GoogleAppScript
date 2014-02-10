@@ -226,16 +226,26 @@ function checkTimedOut(){
  */
 function updateResponse(code,state){
   var gs = loadGlobalState();
-  var ran = fetchStateRange(gs.meta.spreadsheetUrl);
   var res = gs.db.query({code: code});
-  while(res.hasNext()){
+  if(res.hasNext()){
+    var ran = fetchStateRange(gs.meta.spreadsheetUrl);
     var item = res.next();
-    item.state = state;
-    updateStateInStatusRange(ran,item.position,state);
-    gs.db.save(item);
+    if (item.state == invitedState) {
+      item.state = state;
+      updateStateInStatusRange(ran,item.position,state);
+      gs.db.save(item);
+    } else {
+      // will look awkward: you've already Expired :)
+      return "Sorry, but you've already " + item.state + ".";
+    }
+  } else {
+    return "Unfortunately we could not find your record.";
   }
-  if (state == declinedState){
+  if(state == declinedState) {
     sendNewInvites(gs);
+    return "Sorry that you can't make it.";
+  } else {
+    return "Glad that you can come!";
   }
 }
 
