@@ -50,12 +50,16 @@ function handleAnonymous(request){
   if(request.parameter === undefined){ 
     return HtmlService.createHtmlOutput("<b>You must be mistaken.</b>");
   } else {
-    if(request.parameter.email === undefined ||
+    if(request.parameter.code === undefined ||
        request.parameter.state === undefined){
       return HtmlService.createHtmlOutput("<b>Missing parameters.</b>");
     } else {
-      updateResponse(request.parameter.who,request.parameter.state);
-      return HtmlService.createHtmlOutput("<b>Thanks!</b>");
+      updateResponse(request.parameter.code,request.parameter.state);
+      if(state == declinedState) {
+        return HtmlService.createHtmlOutput("<b>Sorry that you can't make it.</b>");
+      } else {
+        return HtmlService.createHtmlOutput("<b>Glad that you can come!</b>");
+      }
     }
 
   }

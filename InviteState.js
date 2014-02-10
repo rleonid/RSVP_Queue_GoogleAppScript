@@ -135,12 +135,12 @@ function setupTimeOutTrigger(timeOutHours){
            .create();
 }
 
-function sendMail(email, eventName, message){
+function sendMail(email, code, eventName, message){
   var url = ScriptApp.getService().getUrl();
-  var target1 = '<a target="_blank" href="' + url + '?email=' + 
-                  email + '&state=' + acceptedState + '" > Accept </a>';
-  var target2 = '<a target="_blank" href="' + url + '?email=' + 
-                  email + '&state=' + declinedState + '" > Decline </a>';
+  var target1 = '<a target="_blank" href="' + url + '?code=' + 
+                  code + '&state=' + acceptedState + '" > Accept </a>';
+  var target2 = '<a target="_blank" href="' + url + '?code=' + 
+                  code + '&state=' + declinedState + '" > Decline </a>';
   var htmlBody = '<div>' + message + '</div><div>' + 
                   target1 + ' | ' + target2 + '</div>';
 
@@ -175,7 +175,7 @@ function sendNewInvites(gs){
     var ran = fetchStateRange(gs.meta.spreadsheetUrl);
     while(res.hasNext()){
       var item = res.next();
-      sendMail(item.email, gs.meta.eventName, gs.meta.message);
+      sendMail(item.email, item.code, gs.meta.eventName, gs.meta.message);
       item.state = invitedState;
       item.timeStamp = nts;
       updateStateInStatusRange(ran,item.position,invitedState);
@@ -221,13 +221,13 @@ function checkTimedOut(){
  * Update a response for an email to the given state and
  * send new invites if necessary.
  *
- * @param {String} email
+ * @param {String} code
  * @param {String} state
  */
-function updateResponse(email,state){
+function updateResponse(code,state){
   var gs = loadGlobalState();
   var ran = fetchStateRange(gs.meta.spreadsheetUrl);
-  var res = gs.db.query({email: email});
+  var res = gs.db.query({code: code});
   while(res.hasNext()){
     var item = res.next();
     item.state = state;
@@ -240,6 +240,22 @@ function updateResponse(email,state){
 }
 
 /**
+ * Not fully secure.
+ */
+function encodeEmail(keyBytes, email){
+  var emailBytes  = Utilities.newBlob(email).getBytes();
+  var code = [];
+  var keyBytesLength = keyBytes.length;
+  for(var i = 0; i < emailBytes.length; i++){
+    code.push(emailBytes[i] ^ keyBytes[i % keyBytesLength]);
+  }
+
+  var as64 = Utilities.base64Encode(code);
+  return as64.replace(/[+=/]/g, '_');
+
+}
+
+/**
  * Setup the state mechanism
  *
  * @param {Meta} meta
@@ -247,11 +263,14 @@ function updateResponse(email,state){
 function setup(meta){
 
   var db = saveMeta(meta);
-  var emails = meta.guests.split(',');
+  var keyBytes = Utilities.newBlob(meta.spreadsheetUrl).getBytes();
 
   // store all of the emails as pending
+  var emails = meta.guests.split(',');
   for(var i = 0; i < emails.length; i++){
-    db.save({email:emails[i], state: pendingState, position:i, timeStamp:-1});
+    var email   = emails[i].trim();
+    var emCode  = encodeEmail(keyBytes, email);
+    db.save({email:email, code: emCode, state: pendingState, position:i, timeStamp:-1});
   }
 
   // send out the invites since no one is currently invited (or accepted).
