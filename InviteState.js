@@ -182,7 +182,7 @@ function sendNewInvites(gs){
       gs.db.save(item);
     }
 
-    // finally set another timeout
+    // finally set timeouts for these invites.
     setupTimeOutTrigger(gs.meta.timeOutHours);
   }
 
@@ -198,23 +198,31 @@ function checkTimedOut(){
     clearTriggers(); // great we're done, so delete all of the remaining triggers
   } else {
 
-    // update the invited that have expired to expired
-    var ran = fetchStateRange(gs.meta.spreadsheetUrl);
-    var now = new Date();
-    var nts = now.getTime();
-    var expiredTimeStamp = nts - hourToMilliSeconds(gs.meta.timeOutHours);
-    var res = gs.db.query({ state: invitedState,
-                            timeStamp: gs.db.lessThan(expiredTimeStamp)});
-    while(res.hasNext()){
-      var item = res.next();
-      item.state = expiredState;
-      updateStateInStatusRange(ran,item.position,expiredState);
-      gs.db.save(item);
+    var res = gs.db.query({state: pendingState});
+    var pending = res.getSize();
+    // if there are no more guests in pending state
+    // don't let the current invites expire
+    if(pending == 0) { 
+      return;
+    } else {
+                        
+      // update the invited that have expired to expired
+      var ran = fetchStateRange(gs.meta.spreadsheetUrl);
+      var now = new Date();
+      var nts = now.getTime();
+      var expiredTimeStamp = nts - hourToMilliSeconds(gs.meta.timeOutHours);
+      var res = gs.db.query({ state: invitedState,
+                              timeStamp: gs.db.lessThan(expiredTimeStamp)});
+      while(res.hasNext()){
+        var item = res.next();
+        item.state = expiredState;
+        updateStateInStatusRange(ran,item.position,expiredState);
+        gs.db.save(item);
+      }
+
+      sendNewInvites(gs);
     }
-
-    sendNewInvites(gs);
   }
-
 }
 
 function checkTimedOutLocked(){
@@ -311,9 +319,6 @@ function setup(meta){
 
   // send out the invites since no one is currently invited (or accepted).
   sendNewInvites(new GlobalState(meta,db,0));
-
-  // set a timeout
-  setupTimeOutTrigger(meta.timeOutHours);
 }
 
 function clearTriggers(){
