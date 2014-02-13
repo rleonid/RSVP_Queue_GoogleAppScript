@@ -1,54 +1,105 @@
-<div>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Queued RSVPs.</title>
+  <style type="text/css">
+    .center {text-align:center;}
+    .centerBox {
+      /* width: 500px; */
+      height: 500px;
+      /* position: absolute; */
+      top:0;
+      /* bottom: 0;*/
+      left: 0;
+      right: 0;
+      margin: auto;
+      font-family: "times", serif;
+    }
+    input, label {
+      display:block;
+    }
+    .floatLeft {
+      float:left;
+      margin-right:20px;
+    }
+    .pullRight {
+      float:right;
+      margin-left:20px;
+    }
+    #left{
+      width:450px;
+      float: left;
+    }
+    #right{
+      margin-left:460px;
+    }
+    .wideLeft{
+      width:400px;
+    }
+    .button{
+      background-color: #FFFFFF;
+      color: #0000000;
+      font-size: 200%;
+      font-family: "times", serif;
+      float: left;
+      padding: 6px;
+      border-radius: 10px;
+      -moz-border-radius: 10px;
+      -webkit-border-radius: 10px;
+    }
+  </style>
   <script>
     function updateUrl(url) {
-      var div = document.getElementById('output');
+      var div = document.getElementById("output");
       div.innerHTML = '<a href="' + url + '">Track results here.</a>';
     }
-  </script>
-  Hello <?= Session.getActiveUser() ?> lets setup a Queued RSVP list:
-  <form>
-    <div title="What do you want to call this event?">
-      <label for="eventName">Event Name:</label>
-      <? if(meta == null) { ?>
-        <input id="eventName" name=eventName type="text">
-      <? } else { ?>
-        <input id="eventName" name=eventName type="text" value= <?= meta.eventName ?> >
-      <? } ?>
-    </div>
-    <div title="Who do you want to invite.">
-      <label for="guests">Guests:</label>
-      <textarea id="guests" name=guests cols=60 rows=10><?= (meta == null) ? '' : meta.guests  ?></textarea>
-    </div>
-    <div>
-      <label for="numYes">Number of Yes's:</label>
-      <? if(meta == null) { ?>
-        <input id="numYes" name=numYes type="number" min=1 max=100 value=5 >
-      <? } else { ?>
-        <input id="numYes" name=numYes type="number" min=1 max=100 value=<?=meta.numYes ?> >
-      <? } ?>
-    </div>
-    <div>
-      <label for="timeToRespond">Number of hours to respond:</label>
-      <? if(meta == null) { ?>
-        <input id="timeToRespond" name=timeToRespond type="number" min=1 max=72 value=6 >
-      <? } else { ?>
-        <input id="timeToRespond" name=timeToRespond type="number" min=1 max=72 value=<?=meta.timeOutHours?> >
-      <? } ?>
-    </div>
-    <div title="The message that you want to send to your guests." >
-      <label for="message">Message:</label>
-      <textarea id="message" name=message cols=60 rows=10><?= (meta == null) ? '' : meta.message ?></textarea>
-    </div>
-    Once you submit, emails will automatically be sent to the first people on your list and you'll be redirected to a 
-    Google spreadsheet where you can keep track of peoples responses.
-    <? if (meta == null) { ?>
-      <input type="button" value="Submit"
-          onclick="google.script.run
-                  .withSuccessHandler(updateUrl)
-                  .processForm(this.parentNode)" />
-    <? } else { ?>
-      <input type="button" value="Cancel" onclick="google.script.run.clearRSVP" />
-    <? } ?>
-  </form>
-  <div id="output"></div>
-</div>
+    function updateNumberOfGuests(v){
+      document.getElementById("desiredNumberOfGuests").innerHTML = v;
+    }
+  </script> 
+</head>
+<body>
+  <h2>Compose a Queued RSVPs</h2> 
+  <a class="pullRight" href="#"><h3>Send Feedback</h3></a>
+  <div class="centerBox">
+    <form class="pure-form">
+
+        <legend ><h3 class="center"> From <?= Session.getActiveUser() ?>:</h3></legend>
+        <div id="left">
+          <div class="floatLeft" title="Who do you want to invite? Provide a comma separated list of emails." >
+          <label for="guests">To:</label>
+          <textarea id="guests" name="guests" cols=60 rows=10><?= (meta == null) ? '' : meta.guests  ?></textarea></div>
+          <div class="floatLeft" title="What do you want to call this event? This will be the subject of the invitation email.">
+          <label for="eventName">Subject:</label>
+          <textarea id="eventName" name="eventName" cols=60 rows=2><?= (meta == null) ? '' : meta.eventName ?></textarea></div>
+          <div class="floatLeft" title="The message that you want to send to your guests." >
+          <label for="message">Message:</label>
+          <textarea id="message" name="message" cols=60 rows=10><?= (meta == null) ? '' : meta.message ?></textarea></div>
+        </div>
+        <div id="right">
+          <div class="floatLeft wideLeft" title="How many guests do you want to have at your event? Once this many people accept the program will stop sending invitations.">
+            <label for="numYes">Number of Accepts</label>
+            <input id="numYes" name="numYes" type="number" min="1" max="100" 
+              value="<?=(meta == null) ? 5 : meta.numYes ?>"
+              onchange="updateNumberOfGuests(this.value)" 
+              onkeyup="updateNumberOfGuests(this.value)"></div>
+
+          <div class="floatLeft wideLeft" title="How much time do you give to an invitation until it expires?" >
+            <label for="timeToRespond">This invitation will expire in (hours):</label>
+            <input id="timeToRespond" name="timeToRespond" type="number" min="1" max="72" 
+              value="<?=(meta == null) ? 6 : meta.timeOutHours ?>" >
+            </div>
+        </div>
+        <div class="floatLeft" >
+          <label for="actionButton">
+            Once you submit, emails will automatically be sent to the first <span id="desiredNumberOfGuests">5</span> people on your list and you&#39;ll be redirected to a 
+            Google spreadsheet where you can keep track of peoples responses.</label>
+          <input class="button" type="button" value="Submit" name="actionButton" onclick="google.script.run.withSuccessHandler(updateUrl).processForm(this.parentNode.parentNode)" />
+          <div id="output"></div>
+        </div>
+
+    </form>
+  </div>
+</body>
+</html>

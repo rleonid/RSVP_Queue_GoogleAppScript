@@ -1,3 +1,6 @@
+- add expired part to message
+- GET -> POST
+- add a state after Declined -> FirstDeclinedButWantsToGo.
 - auto complete in text area
 - include underscore lib https://sites.google.com/site/scriptsexamples/custom-methods/underscoregs
 
