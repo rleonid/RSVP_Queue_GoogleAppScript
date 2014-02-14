@@ -158,6 +158,13 @@ function updateStateInStatusRange(range,position,state){
   range.getCell(position+1,1).setValue(state);
 }
 
+function sendNewInvitesNoMatterWhat()
+{
+  var gs = loadGlobalState();
+  Logger.log(gs);
+  sendNewInvites(gs);
+}
+
 /**
  * Send new invitations based upon the global state
  *
@@ -170,6 +177,7 @@ function sendNewInvites(gs){
   var invited = res.getSize();
   var numberOfInvitesToSendOut = gs.meta.numYes - gs.accepted - invited;
 
+  Logger.log([gs.meta.numYes, gs.accepted, invited]);
   // this check is superfluous in the current program
   // but it is a good check.
   if(numberOfInvitesToSendOut > 0){
@@ -212,7 +220,7 @@ function checkTimedOut(){
     // if there are no more guests in pending state
     // don't let the current invites expire
     if(pending == 0) { 
-      return;
+      clearTriggers();
     } else {
                         
       // update the invited that have expired to expired
