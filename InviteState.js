@@ -126,13 +126,20 @@ var expiredState  = 'Expired';        // or have their invitation expire
 /**
  * Setup a timed trigger to run checkTimedOutLocked in the given number of hours.
  *
+ * @param {ScriptDbInstance} db
  * @param {number} timeOutHours
  */
-function setupTimeOutTrigger(timeOutHours){
-  ScriptApp.newTrigger('checkTimedOutLocked')
-           .timeBased()
-           .after(hourToMilliSeconds(timeOutHours))
-           .create();
+function setupTimeOutTrigger(db,timeOutHours){
+  var now = new Date();
+  var tsmi = hourToMilliSeconds(timeOutHours);
+  var trig = ScriptApp.newTrigger('checkTimedOutLocked')
+                      .timeBased()
+                      .after(tsmi)
+                      .create();
+  var leeway = hourToMilliSeconds(0.25);
+  var expiration = now.getTime() + tsmi + leeway;
+  db.save({trigId:trig.getUniqueId(), trigExpiration:expiration});
+
 }
 
 function sendMail(email, code, eventName, message){
@@ -182,8 +189,10 @@ function sendNewInvites(gs){
       gs.db.save(item);
     }
 
+    // delete all time triggers
+    clearExpiredTimeTriggers(gs.db);
     // finally set timeouts for these invites.
-    setupTimeOutTrigger(gs.meta.timeOutHours);
+    setupTimeOutTrigger(gs.db, gs.meta.timeOutHours);
   }
 
 }
@@ -213,11 +222,13 @@ function checkTimedOut(){
       var expiredTimeStamp = nts - hourToMilliSeconds(gs.meta.timeOutHours);
       var res = gs.db.query({ state: invitedState,
                               timeStamp: gs.db.lessThan(expiredTimeStamp)});
-      while(res.hasNext()){
+      // expire at most as many invites as we have pending!
+      while(res.hasNext() && pending > 0){
         var item = res.next();
         item.state = expiredState;
         updateStateInStatusRange(ran,item.position,expiredState);
         gs.db.save(item);
+        pending = pending - 1;
       }
 
       sendNewInvites(gs);
@@ -319,6 +330,30 @@ function setup(meta){
 
   // send out the invites since no one is currently invited (or accepted).
   sendNewInvites(new GlobalState(meta,db,0));
+}
+
+/**
+ *
+ * @param {ScriptDbInstance} db
+ */
+function clearExpiredTimeTriggers(db){
+
+  var now = new Date();
+  var nts = now.getTime();
+  var res = db.query({trigId:db.anyValue(), trigExpiration: db.lessThan(nts)});
+  var expiredTriggers = [];
+  while (res.hasNext()){
+    var item = res.next();
+    expiredTriggers.push(item.trigId);
+    db.remove(item);
+  }
+
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) {
+    if (expiredTriggers.indexOf(triggers[i].getUniqueId()) > -1){
+      ScriptApp.deleteTrigger(triggers[i]);
+    }
+  }
 }
 
 function clearTriggers(){
