@@ -144,6 +144,8 @@ function setupTimeOutTrigger(db,timeOutHours){
 
 function sendMail(email, code, eventName, message, expiration){
   var url = ScriptApp.getService().getUrl();
+  
+  /*
   var target1 = '<a target="_blank" href="' + url + '?code=' + 
                   code + '&state=' + acceptedState + '" > Accept </a>';
   var target2 = '<a target="_blank" href="' + url + '?code=' + 
@@ -151,7 +153,17 @@ function sendMail(email, code, eventName, message, expiration){
   var expirHtml = '<em> This invitation expires on ' + expiration + '.</em>'
   var htmlBody = '<div>' + message + '</div><div>' + 
                   target1 + ' | ' + target2 +  " | " + expirHtml + '</div>' ;
+  */
 
+  var form    = '<form action="' + url + '" method="post"/>';
+  var code    = '<input type="hidden" name="code" value="' + code + '">';
+  var accept  = '<button type="submit" name="state" value="' + acceptedState + '"> Accept</button>';
+  var decline = '<button type="submit" name="state" value="' + declinedState + '"> Decline</button>';
+  var sep     = " | ";
+  var expirHtml = '<em> This invitation expires on ' + expiration + '.</em>';
+  var endform   = "</form>";
+  var htmlBody = form + code + accept + sep + decline + sep + expirHtml + endform;
+                    
   MailApp.sendEmail(email,eventName,"",{htmlBody:htmlBody});
 }
 

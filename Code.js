@@ -16,7 +16,7 @@ function doGet(request) {
     template.meta = meta;
     return template.evaluate();
   } else {
-    return handleAnonymous(request);
+    return HtmlSerice.createHtmlOutput('Nothing to see here.');
   }
 }
 
@@ -46,7 +46,7 @@ function processForm(formObject) {
  * Or it is a response from one of our emails in which case we need to
  * record the response.
  */
-function handleAnonymous(request){
+function doPost(request){
   Logger.log(["anonymous request:", request]);
   if(request.parameter === undefined){ 
     return HtmlService.createHtmlOutput("<b>You must be mistaken.</b>");
