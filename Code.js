@@ -7,14 +7,14 @@
  * If it is an anonymous user:
  *    Check if they have the correct response parameters
  */
-function doGet(request) {
-  // who's running the show
+function doGet(request) { 
+  // who's running the show?
   var em = Session.getActiveUser().getEmail();
   if (em == Session.getEffectiveUser().getEmail()) {
     var meta = loadMeta();
     var template = HtmlService.createTemplateFromFile('index');
     template.meta = meta;
-    return template.evaluate();
+    return template.evaluate().setSandboxMode(HtmlService.SandboxMode.NATIVE);
   } else {
     return HtmlSerice.createHtmlOutput('Nothing to see here.');
   }

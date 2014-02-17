@@ -74,7 +74,7 @@
 </head>
 <body>
   <h2>Compose a Queued RSVPs</h2> 
-  <a class="pullRight" href="#"><h3>Send Feedback</h3></a>
+  <a class="pullRight" href="mailto:rsvpqueue@gmail.com" ><h3>Send Feedback</h3></a>
   <div class="centerBox">
     <form class="pure-form">
 
@@ -106,8 +106,8 @@
         </div>
         <div class="floatLeft" >
           <label for="actionButton">
-            Once you submit, emails will automatically be sent to the first <span id="desiredNumberOfGuests">5</span> people on your list and you&#39;ll be redirected to a 
-            Google spreadsheet where you can keep track of peoples responses.</label>
+            Once you Invite, emails will automatically be sent to the first <span id="desiredNumberOfGuests">5</span> people on your list and a you'll get a link to a
+            Google spreadsheet where you can keep track of people's responses.</label>
           <? if (meta == null) { ?> 
             <input class="button" type="button" value="Invite" name="actionButton" id="actionButton" onclick="google.script.run.withSuccessHandler(updateUrl).processForm(this.parentNode.parentNode)" />
             <div id="output"></div>
