@@ -142,14 +142,15 @@ function setupTimeOutTrigger(db,timeOutHours){
 
 }
 
-function sendMail(email, code, eventName, message){
+function sendMail(email, code, eventName, message, expiration){
   var url = ScriptApp.getService().getUrl();
   var target1 = '<a target="_blank" href="' + url + '?code=' + 
                   code + '&state=' + acceptedState + '" > Accept </a>';
   var target2 = '<a target="_blank" href="' + url + '?code=' + 
                   code + '&state=' + declinedState + '" > Decline </a>';
+  var expirHtml = '<em> This invitation expires on ' + expiration + '.</em>'
   var htmlBody = '<div>' + message + '</div><div>' + 
-                  target1 + ' | ' + target2 + '</div>';
+                  target1 + ' | ' + target2 +  " | " + expirHtml + '</div>' ;
 
   MailApp.sendEmail(email,eventName,"",{htmlBody:htmlBody});
 }
@@ -188,9 +189,10 @@ function sendNewInvites(gs){
     var now = new Date();
     var nts = now.getTime();
     var ran = fetchStateRange(gs.meta.spreadsheetUrl);
+    var expiration =  new Date(nts + hourToMilliSeconds(gs.meta.timeOutHours)).toLocaleString();
     while(res.hasNext()){
       var item = res.next();
-      sendMail(item.email, item.code, gs.meta.eventName, gs.meta.message);
+      sendMail(item.email, item.code, gs.meta.eventName, gs.meta.message, expiration);
       item.state = invitedState;
       item.timeStamp = nts;
       updateStateInStatusRange(ran,item.position,invitedState);
