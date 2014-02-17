@@ -53,7 +53,20 @@
     function updateUrl(url) {
       var div = document.getElementById("output");
       div.innerHTML = '<a href="' + url + '">Track results here.</a>';
+      var ab = document.getElementById("actionButton");
+      var cb = document.getElementById("clearButton");
+      ab.setAttribute('type','hidden');
+      cb.setAttribute('type','button');
     }
+    function clearForm(){
+      var div = document.getElementById("output");
+      div.innerHTML = "";
+      var ab = document.getElementById("actionButton");
+      var cb = document.getElementById("clearButton");
+      ab.setAttribute('type','button');
+      cb.setAttribute('type','hidden');
+    }
+
     function updateNumberOfGuests(v){
       document.getElementById("desiredNumberOfGuests").innerHTML = v;
     }
@@ -95,8 +108,16 @@
           <label for="actionButton">
             Once you submit, emails will automatically be sent to the first <span id="desiredNumberOfGuests">5</span> people on your list and you&#39;ll be redirected to a 
             Google spreadsheet where you can keep track of peoples responses.</label>
-          <input class="button" type="button" value="Submit" name="actionButton" onclick="google.script.run.withSuccessHandler(updateUrl).processForm(this.parentNode.parentNode)" />
-          <div id="output"></div>
+          <? if (meta == null) { ?> 
+            <input class="button" type="button" value="Invite" name="actionButton" id="actionButton" onclick="google.script.run.withSuccessHandler(updateUrl).processForm(this.parentNode.parentNode)" />
+            <div id="output"></div>
+            <input class="button" type="hidden" value="Cancel" name="clearButton" id="clearButton" onclick="google.script.run.withSuccessHandler(clearForm).clearRSVP();" >
+          <? } else { ?>
+            <input class="button" type="hidden" value="Invite" name="actionButton" id="actionButton" onclick="google.script.run.withSuccessHandler(updateUrl).processForm(this.parentNode.parentNode)" />   
+            <div id="output">'<a href=<?= meta.spreadsheetUrl ?> >Track results here.</a></div>
+            <input class="button" type="button" value="Cancel" name="clearButton" id="clearButton" onclick="google.script.run.withSuccessHandler(clearForm).clearRSVP();" >
+          <? } ?>
+        
         </div>
 
     </form>
