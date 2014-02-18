@@ -16,8 +16,12 @@ function doGet(request) {
     template.meta = meta;
     return template.evaluate().setSandboxMode(HtmlService.SandboxMode.NATIVE);
   } else {
-    return HtmlSerice.createHtmlOutput('Nothing to see here.');
+    return HtmlService.createHtmlOutput('Nothing to see here.');
   }
+}
+
+function authorize(){
+   clearRSVP();
 }
 
 /**
