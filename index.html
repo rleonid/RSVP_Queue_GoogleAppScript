@@ -27,12 +27,13 @@
       float:right;
       margin-left:20px;
     }
-    #left{
+    .left{
       width:450px;
       float: left;
     }
-    #right{
-      margin-left:460px;
+    .right{
+      margin-left:470px;
+      width:200px
     }
     .wideLeft{
       width:400px;
@@ -73,13 +74,36 @@
   </script> 
 </head>
 <body>
-  <h2>Compose a Queued RSVPs</h2> 
-  <a class="pullRight" href="mailto:rsvpqueue@gmail.com" ><h3>Send Feedback</h3></a>
+  <h2>Queued RSVP Prototype</h2> 
   <div class="centerBox">
-    <form class="pure-form">
-
-        <legend ><h3 class="center"> From <?= Session.getActiveUser() ?>:</h3></legend>
-        <div id="left">
+    <div class="floatLeft left">
+     <ol>
+      <li>Decide the target number of people you want for you're event: Target Event Size.
+      <li>Provide an ordered list of contacts (emails separated by a comma) in the "To" box.
+      <li>Write a subject and message descibing your event that will be sent in the email.
+      <li>Decide how long to wait to hear back from invites: Expiration.
+      <li>Once the "Invite" button is pressed, the service sends emails to the first user-defined (<span id="desiredNumberOfGuests">5</span>)
+          Target Event Size. Depending on the response (if the people Accept, Decline, or the invite expires), 
+          the system will email the next uninvited person on the list until the Target Event Size is reached 
+          (or everyone has been invited).
+      <li>A link to a Google spreadsheet where you can keep track of people's responses will also be provided.
+      <li>Pressing "Cancel" will delete the invitation mechanism and let you send new invites.
+     </ol>
+     <a href="mailto:rsvpqueue@gmail.com" ><h3>Send Feedback</h3></a>
+    </div>
+    
+    <form>
+        <div class="right">
+        <h3>
+          <div class="floatLeft wideLeft" title="How many guests do you want to have at your event? Once this many people accept the program will stop sending invitations.">
+            <label for="numYes">Target Event Size</label>
+            <input id="numYes" name="numYes" type="number" min="1" max="100" 
+              value="<?=(meta == null) ? 5 : meta.numYes ?>"
+              onchange="updateNumberOfGuests(this.value)" 
+              onkeyup="updateNumberOfGuests(this.value)"></div>
+        </h3>
+          <div class="floatLeft wideLeft"> From <?= Session.getActiveUser() ?>:</div>  
+          <br>
           <div class="floatLeft" title="Who do you want to invite? Provide a comma separated list of emails." >
           <label for="guests">To:</label>
           <textarea id="guests" name="guests" cols=60 rows=10><?= (meta == null) ? '' : meta.guests  ?></textarea></div>
@@ -89,36 +113,25 @@
           <div class="floatLeft" title="The message that you want to send to your guests." >
           <label for="message">Message:</label>
           <textarea id="message" name="message" cols=60 rows=10><?= (meta == null) ? '' : meta.message ?></textarea></div>
-        </div>
-        <div id="right">
-          <div class="floatLeft wideLeft" title="How many guests do you want to have at your event? Once this many people accept the program will stop sending invitations.">
-            <label for="numYes">Number of Accepts</label>
-            <input id="numYes" name="numYes" type="number" min="1" max="100" 
-              value="<?=(meta == null) ? 5 : meta.numYes ?>"
-              onchange="updateNumberOfGuests(this.value)" 
-              onkeyup="updateNumberOfGuests(this.value)"></div>
-
           <div class="floatLeft wideLeft" title="How much time do you give to an invitation until it expires?" >
-            <label for="timeToRespond">This invitation will expire in (hours):</label>
+            <h3>
+            <label for="timeToRespond">Expiration (hours):</label>
             <input id="timeToRespond" name="timeToRespond" type="number" min="1" max="72" 
               value="<?=(meta == null) ? 6 : meta.timeOutHours ?>" >
-            </div>
-        </div>
-        <div class="floatLeft" >
-          <label for="actionButton">
-            Once you Invite, emails will automatically be sent to the first <span id="desiredNumberOfGuests">5</span> people on your list and a you'll get a link to a
-            Google spreadsheet where you can keep track of people's responses.</label>
+            </h3> 
+          </div>
+         <div class="floatLeft" >
           <? if (meta == null) { ?> 
-            <input class="button" type="button" value="Invite" name="actionButton" id="actionButton" onclick="google.script.run.withSuccessHandler(updateUrl).processForm(this.parentNode.parentNode)" />
+            <input class="button" type="button" value="Invite" name="actionButton" id="actionButton" onclick="google.script.run.withSuccessHandler(updateUrl).processForm(this.parentNode.parentNode.parentNode)" />
             <div id="output"></div>
             <input class="button" type="hidden" value="Cancel" name="clearButton" id="clearButton" onclick="google.script.run.withSuccessHandler(clearForm).clearRSVP();" >
           <? } else { ?>
-            <input class="button" type="hidden" value="Invite" name="actionButton" id="actionButton" onclick="google.script.run.withSuccessHandler(updateUrl).processForm(this.parentNode.parentNode)" />   
+            <input class="button" type="hidden" value="Invite" name="actionButton" id="actionButton" onclick="google.script.run.withSuccessHandler(updateUrl).processForm(this.parentNode.parentNode.parentNode)" />   
             <div id="output">'<a href=<?= meta.spreadsheetUrl ?> >Track results here.</a></div>
             <input class="button" type="button" value="Cancel" name="clearButton" id="clearButton" onclick="google.script.run.withSuccessHandler(clearForm).clearRSVP();" >
           <? } ?>
-        
         </div>
+      </div>
 
     </form>
   </div>
