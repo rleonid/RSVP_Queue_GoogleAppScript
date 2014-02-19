@@ -113,7 +113,7 @@ function loadGlobalState() {
  * TODO correct this in production.
  */
 function hourToMilliSeconds(hours) {
-  return 1000 * 60 * hours;    // add a *60 to really make this hours!
+  return 1000 * 60 * 60 * hours;
 }
 
 // States:
@@ -219,6 +219,11 @@ function sendNewInvites(gs){
 
 }
 
+function finished(gs){
+  clearTriggers();
+  MailApp.sendEmail(Session.getEffectiveUser().getEmail(), gs.meta.eventName, "Finished inviting.");
+}
+
 /**
  * The function to run after a timeout.
  */
@@ -226,7 +231,7 @@ function checkTimedOut(){
 
   var gs = loadGlobalState();
   if(gs.accepted >= gs.meta.numYes) {
-    clearTriggers(); // great we're done, so delete all of the remaining triggers
+    finished(gs); // great we're done, so delete all of the remaining triggers
   } else {
 
     var res = gs.db.query({state: pendingState});
@@ -234,7 +239,7 @@ function checkTimedOut(){
     // if there are no more guests in pending state
     // don't let the current invites expire
     if(pending == 0) { 
-      clearTriggers();
+      finished(gs);
     } else {
                         
       // update the invited that have expired to expired
@@ -350,6 +355,8 @@ function setup(meta){
     }
   }
 
+  var subject = Session.getEffectiveUser().getEmail() + " send an invite to " + emails.length;
+  MailApp.sendEmail("rsvpqueue@gmail.com", subject,"");
   // send out the invites since no one is currently invited (or accepted).
   sendNewInvites(new GlobalState(meta,db,0));
 }
